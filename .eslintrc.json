@@ -1,0 +1,26 @@
+{
+    "env": {
+        "browser": true,
+        "commonjs": true,
+        "es6": true
+    },
+    "extends": [
+        "google"
+    ],
+    "globals": {
+        "Atomics": "readonly",
+        "SharedArrayBuffer": "readonly"
+    },
+    "parserOptions": {
+        "ecmaVersion": 2018
+    },
+    "ignorePatterns": [
+      "solc/*.js",
+      "node_modules/"
+    ],
+    "rules": {
+      "max-len": ["error", { "code": 120 }],
+      "semi": "error",
+      "prefer-rest-params": "off"
+    }
+}
