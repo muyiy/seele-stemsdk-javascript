@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo 'overwrite!'
+echo 'overwrite go-seele directory for' $1 ' !'

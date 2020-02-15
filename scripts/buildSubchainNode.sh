@@ -1,3 +1,3 @@
 #!/bin/bash
 
-echo 'build!'
+echo 'build subchain node!'
