@@ -1,5 +1,6 @@
-const commands = module.exports.commands = {
-  'seele': [
+var commands = module.exports.commands = {
+  "seele":[
+    'subGen',
     'getInfo',
     'getBalance',
     'addTx',
@@ -25,30 +26,30 @@ const commands = module.exports.commands = {
     'getAccountTransactions',
     'getBlockTransactions',
     'getBlockTransactionsByHeight',
-    'getBlockTransactionsByHash',
+    'getBlockTransactionsByHash'
   ],
-  'txpool': [
+  "txpool":[
     'getTransactionByHash',
     'getDebtByHash',
     'getGasPrice',
     'getTxPoolContent',
     'getTxPoolTxCount',
     'getPendingTransactions',
-    'getPendingDebts',
+    'getPendingDebts'
   ],
-  'download': [
+  "download":[
     'getStatus',
-    'isSyncing',
+    'isSyncing'
   ],
-  'network': [
+  "network":[
     'getPeersInfo',
     'getPeerCount',
     'getNetVersion',
     'getProtocolVersion',
     'getNetworkID',
-    'isListening',
+    'isListening'
   ],
-  'miner': [
+  "miner":[
     'start',
     'stop',
     'status',
@@ -57,46 +58,55 @@ const commands = module.exports.commands = {
     'getWork',
     'setThreads',
     'setCoinbase',
-    'getThreads',
+    'getThreads'
   ],
-  'debug': [
+  "debug":[
     'printBlock',
     'dumpHeap',
-    'getTPS',
+    'getTPS'
   ],
-  'monitor': [
+  "monitor":[
     'nodeInfo',
-    'nodeStats',
+    'nodeStats'
   ],
-};
+  "subchain":[
+    "getBlockCreator",
+    "getBalanceTreeRoot",
+    "getBalanceTreeRoot",
+    "getTxTreeRoot",
+    "getBlockSignature",
+    "getBlockInfoForStem",
+    "getTxMerkleInfo",
+    "getBalanceMerkleInfo",
+    "getRecentTxTreeRoot",
+    "getRecentTxMerkleInfo",
+    "getAccountTx",
+    "getUpdatedAccountInfo",
+    "getFee",
+    "getRelayInterval",
+  ]
+}
 
-const isCommand = module.exports.isCommand = function(command) {
+
+var isCommand = module.exports.isCommand = function(command) {
   for (const namespace in commands) {
-    if (commands.hasOwnProperty(namespace)) {
-      for (const key in commands[namespace]) {
-        if (commands[namespace].hasOwnProperty(key)) {
-          if (commands[namespace][key] === command) {
-            return true;
-          }
-        }
+    for (const key in commands[namespace]) {
+      if (commands[namespace][key] === command){
+        return true
       }
     }
   }
-};
+}
 
-const getNamespace = module.exports.getNamespace = function(command) {
+var getNamespace = module.exports.getNamespace = function(command) {
   for (const namespace in commands) {
-    if (commands.hasOwnProperty(namespace)) {
-      for (const key in commands[namespace]) {
-        if (commands[namespace].hasOwnProperty(key)) {
-          if (commands[namespace][key] === command) {
-            return namespace;
-          }
-        }
+    for (const key in commands[namespace]) {
+      if (commands[namespace][key] === command){
+        return namespace
       }
     }
   }
-};
+}
 
 if (typeof window !== 'undefined' && window.XMLHttpRequest) {
   XMLHttpRequest = window.XMLHttpRequest;
@@ -104,28 +114,22 @@ if (typeof window !== 'undefined' && window.XMLHttpRequest) {
   XMLHttpRequest = require('xmlhttprequest').XMLHttpRequest;
 }
 
-/** @class */
+/**@class */
 class seeleJSONRPC {
+
   /**
-   * constructor - initiate rpc object
-   *
-   * @param  {string} address rpc address
-   * @param  {number} timeout timeout
+   * constructor - Initialize rpc object
+   * method
+   * @param  {string} address node address
+   * @param  {string} timeout timeout number
    */
   constructor(address, timeout) {
     this.host = address || 'http://localhost:8037';
     this.timeout = timeout || 30000;
   }
 
-
-  /**
-   * prepareRequest - description
-   *
-   * @param  {bool} async async function or not
-   * @return {type}       description
-   */
   prepareRequest(async) {
-    const request = new XMLHttpRequest();
+    var request = new XMLHttpRequest();
     request.withCredentials = false;
     request.timeout = this.timeout;
     request.open('POST', this.host, async);
@@ -133,46 +137,39 @@ class seeleJSONRPC {
     return request;
   }
 
-
-  /**
-   * send - description
-   *
-   * @param  {string} command command name
-   * @return {type}         description
-   */
   send(command) {
-    const currHost = this.host;
+    var currHost = this.host;
     return new Promise((resolve, reject) => {
-      if (!isCommand(command)) {
-        this.invalid(command);
-        reject(new Error(`command ${command} does not exist`));
+      if(!isCommand(command)){
+        this.invalid(command)
+        reject(new Error(`command ${command} does not exist`))
       }
-      const args = Array.prototype.slice.call(arguments, 1);
+      var args = Array.prototype.slice.call(arguments, 1)
       if (typeof args[args.length - 1] === 'function') {
         resolve = args[args.length - 1].bind(this);
         reject = args.pop().bind(this);
       }
 
-      const request = this.prepareRequest(true);
-      const rpcData = JSON.stringify({
+      var request = this.prepareRequest(true)
+      var rpcData = JSON.stringify({
         id: new Date().getTime(),
-        method: getNamespace(command).concat('_').concat(command),
-        params: args,
+        method: getNamespace(command).concat("_").concat(command),
+        params: args
       });
 
-      request.onload = function() {
+      request.onload = function () {
         if (request.readyState === 4 && request.timeout !== 1) {
-          const result = JSON.parse(request.responseText);
+          var result = JSON.parse(request.responseText)
           try {
             if (result.error) {
-              result.error.args = JSON.stringify(args);
-              result.error.command = command.toString();
-              resolve(result);
+              result.error.args = JSON.stringify(args)
+              result.error.command = command.toString()
+              resolve(result)
             } else {
-              resolve(result.result);
+              resolve(result.result)
             }
           } catch (exception) {
-            reject(new Error(exception));
+            reject(new Error(exception))
           }
         }
       };
@@ -180,59 +177,52 @@ class seeleJSONRPC {
       request.ontimeout = () => {
         console.error('time out');
         // reject(args,new Error('CONNECTION TIMEOUT: timeout of ' + currHost + ' ms achieved'));
-        reject(new Error('CONNECTION TIMEOUT: timeout of ' + currHost + ' ms achieved'));
+        reject(new Error('CONNECTION TIMEOUT: timeout of ' + currHost + ' ms achieved'))
       };
 
-      request.onerror = function() {
-        if (request.status == 0) {
-          reject(new Error('CONNECTION ERROR: Couldn\'t connect to node '+currHost +'.'));
-        } else {
-          reject(new Error(request.statusText));
+      request.onerror = function () {
+        if(request.status == 0){
+          reject(new Error('CONNECTION ERROR: Couldn\'t connect to node '+currHost +'.'))
+        }else{
+          reject(new Error(request.statusText))
         }
       };
 
       try {
         request.send(rpcData);
       } catch (error) {
-        reject(JSON.parse(JSON.stringify(error)));
+        reject(JSON.parse(JSON.stringify(error)))
       }
       return request;
-    });
+    })
   }
 
-
-  /**
-   * sendSync - description
-   *
-   * @param  {string} command command name
-   * @return {type}         description
-   */
   sendSync(command) {
-    if (!isCommand(command)) {
-      this.invalid(command);
-      reject(new Error(`command ${command} does not exist`));
+    if(!isCommand(command)){
+      this.invalid(command)
+      reject(new Error(`command ${command} does not exist`))
     }
-    const args = Array.prototype.slice.call(arguments, 1);
+    var args    = Array.prototype.slice.call(arguments, 1)
 
-    const request = this.prepareRequest(false);
-    const rpcData = JSON.stringify({
+    var request = this.prepareRequest(false)
+    var rpcData = JSON.stringify({
       id: new Date().getTime(),
-      method: getNamespace(command).concat('_').concat(command),
-      params: args,
+      method: getNamespace(command).concat("_").concat(command),
+      params: args
     });
 
-    request.onerror = function() {
-      throw request.statusText;
+    request.onerror = function () {
+      throw request.statusText
     };
 
     try {
       request.send(rpcData);
     } catch (error) {
-      console.log(error);
+      console.log(error)
       throw new Error('CONNECTION ERROR: Couldn\'t connect to node '+ this.host +'.');
     }
 
-    let result = request.responseText;
+    var result = request.responseText;
 
     try {
       // console.log(result);
@@ -241,33 +231,24 @@ class seeleJSONRPC {
         throw new Error(JSON.stringify(result));
       }
 
-      return result.result;
+      return result.result
     } catch (exception) {
       throw new Error(exception + ' : ' + JSON.stringify(result));
     }
   }
 
-
-  /**
-   * invalid - check command validity
-   *
-   * @param  {string} command command name
-   * @return {type}         description
-   */
   invalid(command) {
     return console.log(new Error('No such command "' + command + '"'));
   }
 }
 
 for (const namespace in commands) {
-  if (commands.hasOwnProperty(namespace)) {
-    commands[namespace].forEach((command) => {
-      const cp = seeleJSONRPC.prototype;
-      cp[command] = function() {
-        return this.send(command, ...arguments);
-      };
-    });
-  }
+  commands[namespace].forEach(command => {
+    var cp = seeleJSONRPC.prototype
+    cp[command] = function() {
+      return this.send(command, ...arguments);
+    }
+  })
 }
 
 module.exports = seeleJSONRPC;
